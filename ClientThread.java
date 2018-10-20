@@ -1,79 +1,129 @@
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ClientThread extends Thread {
 
 	private Socket socket;
 	private int user_id;
 	public static final int REQUESTS = 300;
+	public static ArrayList RTT_list;
+	private int N;
 
-	public ClientThread(Socket socket, int user_id) {
+	public ClientThread(Socket socket, int user_id, ArrayList RTT_list, int N) {
 
 		this.socket = socket;
 		this.user_id = user_id;
+		this.RTT_list = RTT_list;
+		this.N = N;
 
 	}
 
 	public void run() {
 
+		PrintWriter writer_output_file;
 		try {
+			writer_output_file = new PrintWriter("RTT_output.txt", "UTF-8");
 
-			/*
-			 * OutputStream output = socket.getOutputStream();
-			 * 
-			 * PrintWriter writer = new PrintWriter(output, true);
-			 * writer.println("hello");
-			 */
+			try {
 
-			for (int i = 0; i < REQUESTS; i++) {
-				InputStream input = socket.getInputStream();
+				/*
+				 * OutputStream output = socket.getOutputStream();
+				 * 
+				 * PrintWriter writer = new PrintWriter(output, true);
+				 * writer.println("hello");
+				 */
+				long sum = 0;
 
-				BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+				for (int i = 0; i < REQUESTS; i++) {
+					InputStream input = socket.getInputStream();
 
-				OutputStream output = socket.getOutputStream();
+					BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
-				PrintWriter writer = new PrintWriter(output, true);
+					OutputStream output = socket.getOutputStream();
 
-				String IPaddress = socket.getLocalAddress().toString();
-				writer.println("HELLO " + IPaddress + " " + socket.getPort() + " " + user_id + " fora " + i);
-				System.out.println("HELLO " + IPaddress + " " + socket.getPort() + " " + user_id + " fora " + i);
+					PrintWriter writer = new PrintWriter(output, true);
 
-				System.out.println("response to the client: " + reader.readLine());
+					String IPaddress = socket.getLocalAddress().toString();
+					long startTime = System.nanoTime();
+					writer.println("HELLO " + IPaddress + " " + socket.getPort() + " " + user_id + " fora " + i);
+					//System.out.println("HELLO " + IPaddress + " " + socket.getPort() + " " + user_id + " fora " + i);
 
-				int payloadSize = Integer.parseInt(reader.readLine());
-				System.out.println("payload size: " + payloadSize);
+					String response = reader.readLine();
+					//System.out.println("response to the client: " + response);
 
-				byte[] payload_table = reader.readLine().getBytes();
-				for (int j = 0; j < payload_table.length; j++) {
-					System.out.print(payload_table[j]);
+					int payloadSize = Integer.parseInt(reader.readLine());
+					//System.out.println("payload size: " + payloadSize);
+
+					byte[] payload_table = reader.readLine().getBytes();
+					for (int j = 0; j < payload_table.length; j++) {
+						//System.out.print(payload_table[j]);
+					}
+					//System.out.println();
+
+					// calculate the RTT time
+					long finalTime = System.nanoTime();
+					long RTT = finalTime - startTime;
+
+					sum += RTT;
+
+					// writer_output_file.println(RTT);
+					// System.out.println("start time: "+ startTime+"final time:
+					// "+finalTime+"RTT: "+RTT);
+
+					/*
+					 * DataInputStream dIn = new DataInputStream(input); int
+					 * payloadSize = dIn.readInt(); System.out.println("Client "
+					 * + user_id + ": Payload size: " + payloadSize); if
+					 * (payloadSize > 0) { byte[] payload = new
+					 * byte[payloadSize]; dIn.readFully(payload, 0,
+					 * payload.length); // read the // message
+					 * System.out.println("Client " + user_id +
+					 * ": Last character: " + (int) payload[payload.length -
+					 * 1]); }
+					 */
 				}
 				/*
-				 * DataInputStream dIn = new DataInputStream(input); int
-				 * payloadSize = dIn.readInt(); System.out.println("Client " +
-				 * user_id + ": Payload size: " + payloadSize); if (payloadSize
-				 * > 0) { byte[] payload = new byte[payloadSize];
-				 * dIn.readFully(payload, 0, payload.length); // read the //
-				 * message System.out.println("Client " + user_id +
-				 * ": Last character: " + (int) payload[payload.length - 1]); }
-				 */}
-			/*
-			 * input.close(); reader.close(); output.close(); writer.close();
-			 */
-			socket.close();
-		} catch (IOException ex) {
+				 * input.close(); reader.close(); output.close();
+				 * writer.close();
+				 */
+				long averageRTT = sum / 300; // average RTT for one user
+				RTT_list.add(averageRTT);// contains RTT for all users
 
-			System.out.println("Client exception: " + ex.getMessage());
+				Client.RTT_array[this.user_id] = averageRTT;
+				
+				socket.close();
 
-			ex.printStackTrace();
+			} catch (IOException ex) {
 
+				System.out.println("Client exception: " + ex.getMessage());
+
+				ex.printStackTrace();
+
+			}
+
+			long sumRTT = 0;
+			if (RTT_list.size() == N) {// if all the RTT's for each user is
+										// written to the list
+				for (int i = 0; i < N; i++) {
+					sumRTT = sumRTT + (long) RTT_list.get(i);// the RTT for all
+																// users
+				}
+				writer_output_file.println("NUM OF USERS: " + N + " SUM RTT: " + sumRTT);
+				writer_output_file.close();
+			}
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-
 	}
 
 }
