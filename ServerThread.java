@@ -11,6 +11,7 @@ import java.util.Random;
 public class ServerThread extends Thread {
 
 	private Socket socket;
+	public static final int REQUESTS = 300;
 
 	public ServerThread(Socket socket) {
 
@@ -44,56 +45,57 @@ public class ServerThread extends Thread {
 	public void run() {
 
 		try {
-			
 
-			/*InputStream input = socket.getInputStream();
+			/*
+			 * InputStream input = socket.getInputStream();
+			 * 
+			 * BufferedReader reader = new BufferedReader(new
+			 * InputStreamReader(input)); System.out.println(reader.readLine());
+			 */
 
-			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-			System.out.println(reader.readLine());*/
-
-			
 			// Read data from the client
 
-			InputStream input = socket.getInputStream();
+			for (int i = 0; i < REQUESTS; i++) {
+				InputStream input = socket.getInputStream();
 
-			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
-			OutputStream output = socket.getOutputStream();
+				OutputStream output = socket.getOutputStream();
 
-			PrintWriter writer = new PrintWriter(output, true);
+				PrintWriter writer = new PrintWriter(output, true);
 
-			String request = reader.readLine();
+				String request = reader.readLine();
 
-			String[] tokens = request.split(" ");
+				System.out.println("REQUEST: " + request);
+				String[] tokens = request.split(" ");
 
-			int user_id = Integer.parseInt(tokens[3]);
+				int user_id = Integer.parseInt(tokens[3]);
 
-			// reply to the client
+				// reply to the client
 
-			writer.println("WELCOME " + user_id);
+				writer.println("WELCOME " + user_id);
 
-			int payloadSize = CalculatePayloadSize(300, 2000);
-			byte[] payload = CalculatePayloadValue(payloadSize);
+				int payloadSize = CalculatePayloadSize(300, 2000);
+				byte[] payload = CalculatePayloadValue(payloadSize);
 
-			DataOutputStream dOut = new DataOutputStream(output);
-			
-			writer.println(payloadSize);
-			
-			writer.println(payload);
-			
-			System.out.println("Payload size: "+payloadSize);
+				DataOutputStream dOut = new DataOutputStream(output);
 
+				writer.println(payloadSize);
 
-		/*	System.out.println("Send to user " + user_id + ", Payload size: " + payload.length);
-			dOut.writeInt(payloadSize);
-			dOut.write(payload);
-*/
-			input.close();
-			reader.close();
-			output.close();
-			writer.close();
+				writer.println(payload);
+			}
+
+			// System.out.println("Payload size: "+payloadSize);
+
+			/*
+			 * System.out.println("Send to user " + user_id + ", Payload size: "
+			 * + payload.length); dOut.writeInt(payloadSize);
+			 * dOut.write(payload);
+			 */
+			/*
+			 * input.close(); reader.close(); output.close(); writer.close();
+			 */
 			socket.close();
-			
 
 		} catch (IOException ex) {
 

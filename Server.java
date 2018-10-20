@@ -3,8 +3,6 @@ import java.io.*;
 import java.net.*;
 import java.util.Random;
 
-
-
 public class Server {
 
 	public static void main(String[] args) {
@@ -27,7 +25,7 @@ public class Server {
 
 				new ServerThread(socket).start();
 
-				//socket.close();
+				// socket.close();
 			}
 
 		} catch (IOException ex) {
