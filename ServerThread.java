@@ -12,6 +12,9 @@ public class ServerThread extends Thread {
 
 	private Socket socket;
 	public static final int REQUESTS = 300;
+	public static int counter = 0;// how many requests satisfies from the
+									// server
+	public static final double INTERVAL = Math.pow(10, 9);
 
 	public ServerThread(Socket socket) {
 
@@ -43,9 +46,9 @@ public class ServerThread extends Thread {
 	}
 
 	public void run() {
-
+		boolean flag = false;
 		try {
-
+			PrintWriter writer_output_file = new PrintWriter("througput_output.txt", "UTF-8");
 			/*
 			 * InputStream input = socket.getInputStream();
 			 * 
@@ -54,6 +57,7 @@ public class ServerThread extends Thread {
 			 */
 
 			// Read data from the client
+			long startTime = System.nanoTime();
 
 			for (int i = 0; i < REQUESTS; i++) {
 				InputStream input = socket.getInputStream();
@@ -83,6 +87,20 @@ public class ServerThread extends Thread {
 				writer.println(payloadSize);
 
 				writer.println(payload);
+
+				long endTime = System.nanoTime();
+				if ((endTime - startTime) <= INTERVAL) {
+					counter++;
+				} else {
+					flag = true;
+					System.out.println("the amount of requests that a server satisfied in " + INTERVAL
+							+ " nanoseconds are " + counter);
+					startTime = System.nanoTime();
+					counter = 0;
+				}
+
+				
+				
 			}
 
 			// System.out.println("Payload size: "+payloadSize);
@@ -95,8 +113,13 @@ public class ServerThread extends Thread {
 			/*
 			 * input.close(); reader.close(); output.close(); writer.close();
 			 */
+			if (flag == false) {
+				System.out.println("the amount of requests that a server satisfied in " + INTERVAL
+						+ " nanoseconds are " + counter);
+			}
+			
 			socket.close();
-
+			writer_output_file.close();
 		} catch (IOException ex) {
 
 			System.out.println("Server exception: " + ex.getMessage());
