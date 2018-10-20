@@ -22,7 +22,7 @@ public class Client {
 
 			for (int i = 0; i < N; i++) {
 				Socket socket = new Socket(hostname, port);
-				ClientThread client = new ClientThread(socket, 0);
+				ClientThread client = new ClientThread(socket, i);
 				client.start();
 			}
 
