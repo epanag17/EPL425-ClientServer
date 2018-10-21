@@ -35,12 +35,6 @@ public class ClientThread extends Thread {
 
 			try {
 
-				/*
-				 * OutputStream output = socket.getOutputStream();
-				 * 
-				 * PrintWriter writer = new PrintWriter(output, true);
-				 * writer.println("hello");
-				 */
 				long sum = 0;
 
 				for (int i = 0; i < REQUESTS; i++) {
@@ -75,26 +69,8 @@ public class ClientThread extends Thread {
 
 					sum += RTT;
 
-					// writer_output_file.println(RTT);
-					// System.out.println("start time: "+ startTime+"final time:
-					// "+finalTime+"RTT: "+RTT);
-
-					/*
-					 * DataInputStream dIn = new DataInputStream(input); int
-					 * payloadSize = dIn.readInt(); System.out.println("Client "
-					 * + user_id + ": Payload size: " + payloadSize); if
-					 * (payloadSize > 0) { byte[] payload = new
-					 * byte[payloadSize]; dIn.readFully(payload, 0,
-					 * payload.length); // read the // message
-					 * System.out.println("Client " + user_id +
-					 * ": Last character: " + (int) payload[payload.length -
-					 * 1]); }
-					 */
 				}
-				/*
-				 * input.close(); reader.close(); output.close();
-				 * writer.close();
-				 */
+
 				long averageRTT = sum / 300; // average RTT for one user
 				RTT_list.add(averageRTT);// contains RTT for all users
 
