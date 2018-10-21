@@ -49,12 +49,6 @@ public class ServerThread extends Thread {
 		boolean flag = false;
 		try {
 			PrintWriter writer_output_file = new PrintWriter("througput_output.txt", "UTF-8");
-			/*
-			 * InputStream input = socket.getInputStream();
-			 * 
-			 * BufferedReader reader = new BufferedReader(new
-			 * InputStreamReader(input)); System.out.println(reader.readLine());
-			 */
 
 			// Read data from the client
 			long startTime = System.nanoTime();
@@ -70,7 +64,7 @@ public class ServerThread extends Thread {
 
 				String request = reader.readLine();
 
-				System.out.println("REQUEST: " + request);
+				// System.out.println("REQUEST: " + request);
 				String[] tokens = request.split(" ");
 
 				int user_id = Integer.parseInt(tokens[3]);
@@ -88,20 +82,22 @@ public class ServerThread extends Thread {
 
 				writer.println(payload);
 
-				long endTime = System.nanoTime();
+				/*long endTime = System.nanoTime();
 				if ((endTime - startTime) <= INTERVAL) {
 					counter++;
 				} else {
 					flag = true;
-					System.out.println("the amount of requests that a server satisfied in " + INTERVAL
-							+ " nanoseconds are " + counter);
+					// System.out.println("the amount of requests that a server
+					// satisfied in " + INTERVAL
+					// + " nanoseconds are " + counter);
 					startTime = System.nanoTime();
 					counter = 0;
-				}
+				}*/
 
-				
-				
 			}
+			long endTime = System.nanoTime();
+			long time_satisfied_req_user = endTime-startTime;
+			
 
 			// System.out.println("Payload size: "+payloadSize);
 
@@ -110,14 +106,13 @@ public class ServerThread extends Thread {
 			 * + payload.length); dOut.writeInt(payloadSize);
 			 * dOut.write(payload);
 			 */
-			/*
-			 * input.close(); reader.close(); output.close(); writer.close();
-			 */
-			if (flag == false) {
-				System.out.println("the amount of requests that a server satisfied in " + INTERVAL
-						+ " nanoseconds are " + counter);
-			}
-			
+
+			/*if (flag == false) {
+				// System.out.println("the amount of requests that a server
+				// satisfied in " + INTERVAL
+				// + " nanoseconds are " + counter);
+			}*/
+
 			socket.close();
 			writer_output_file.close();
 		} catch (IOException ex) {
