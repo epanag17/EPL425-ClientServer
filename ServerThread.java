@@ -1,12 +1,17 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Random;
+
+import javax.swing.plaf.synth.SynthSpinnerUI;
 
 public class ServerThread extends Thread {
 
@@ -14,12 +19,16 @@ public class ServerThread extends Thread {
 	public static final int REQUESTS = 300;
 	public static int counter = 0;// how many requests satisfies from the
 									// server
-	public static final double INTERVAL = Math.pow(10, 9);
+	
+	public static final double INTERVAL = Math.pow(10, 6); // Interval ana miliseconds
+	
 
-	public ServerThread(Socket socket) {
+	public ServerThread(Socket socket, int threadID) {
 
 		this.socket = socket;
 
+		this.throughput_list = new ArrayList<Integer>();
+		this.threadID = threadID;
 	}
 
 	public static int CalculatePayloadSize(int minRange, int maxRange) {
@@ -28,39 +37,43 @@ public class ServerThread extends Thread {
 
 		int range = (maxRange - minRange) + 1;
 		int size = (int) (random.nextDouble() * range) + minRange;
+		
+		//int size = 300;
 		size = size * 1024;
 		return size;
 	}
 
-	public static byte[] CalculatePayloadValue(int payloadSize) {
-		byte[] payloadValue = new byte[payloadSize];
-		// arxikopoisi payloadValue me 0 stis zyges theseis kai 1 stis mones
-		// theseis
-		for (int i = 0; i < payloadValue.length; i++) {
-			if (i % 2 == 0)
-				payloadValue[i] = 'A';
-			else
-				payloadValue[i] = 'D';
-		}
-		return payloadValue;
-	}
 
+	public static String CalculatePayloadValue(int payloadSize){
+		
+		String payload = "";
+		StringBuilder payloadBuilder = new StringBuilder(payloadSize);
+		for (int i = 0; i < payloadSize; i++) {
+			if (i % 2 == 0)
+				payloadBuilder.append('A');
+			else
+				payloadBuilder.append('D');
+		}
+		
+		return payloadBuilder.toString();
+	}
+	
 	public void run() {
 		boolean flag = false;
 		try {
-			PrintWriter writer_output_file = new PrintWriter("througput_output.txt", "UTF-8");
 
 			// Read data from the client
 			long startTime = System.nanoTime();
 
-			for (int i = 0; i < REQUESTS; i++) {
-				InputStream input = socket.getInputStream();
+			InputStream input = socket.getInputStream();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+			OutputStream output = socket.getOutputStream();
 
-				BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+			DataOutputStream dOut = new DataOutputStream(output);
+			PrintWriter writer = new PrintWriter(output, true);			
 
-				OutputStream output = socket.getOutputStream();
 
-				PrintWriter writer = new PrintWriter(output, true);
+			for (int i = 0; i < REQUESTS; i++) {				
 
 				String request = reader.readLine();
 
@@ -74,47 +87,14 @@ public class ServerThread extends Thread {
 				writer.println("WELCOME " + user_id);
 
 				int payloadSize = CalculatePayloadSize(300, 2000);
-				byte[] payload = CalculatePayloadValue(payloadSize);
-
-				DataOutputStream dOut = new DataOutputStream(output);
-
-				writer.println(payloadSize);
+				String payload = CalculatePayloadValue(payloadSize);
 
 				writer.println(payload);
 
-				/*long endTime = System.nanoTime();
-				if ((endTime - startTime) <= INTERVAL) {
-					counter++;
-				} else {
-					flag = true;
-					// System.out.println("the amount of requests that a server
-					// satisfied in " + INTERVAL
-					// + " nanoseconds are " + counter);
-					startTime = System.nanoTime();
-					counter = 0;
-				}*/
-
 			}
-			long endTime = System.nanoTime();
-			long time_satisfied_req_user = endTime-startTime;
 			
-
-			// System.out.println("Payload size: "+payloadSize);
-
-			/*
-			 * System.out.println("Send to user " + user_id + ", Payload size: "
-			 * + payload.length); dOut.writeInt(payloadSize);
-			 * dOut.write(payload);
-			 */
-
-			/*if (flag == false) {
-				// System.out.println("the amount of requests that a server
-				// satisfied in " + INTERVAL
-				// + " nanoseconds are " + counter);
-			}*/
-
 			socket.close();
-			writer_output_file.close();
+			//writer_output_file.close();
 		} catch (IOException ex) {
 
 			System.out.println("Server exception: " + ex.getMessage());

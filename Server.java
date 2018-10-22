@@ -1,9 +1,16 @@
 import java.io.*;
-
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Server {
+
+	public static ArrayList<ServerThread> Thread_list = new ArrayList();
+
+	public static int threadID = 0;
+
 
 	public static void main(String[] args) {
 
@@ -11,21 +18,36 @@ public class Server {
 
 			return;
 
-		int port = Integer.parseInt(args[0]);
+		try {
+			int port = Integer.parseInt(args[0]);
 
-		try (ServerSocket serverSocket = new ServerSocket(port)) {
 
-			System.out.println("Server is listening on port " + port);
+			try (ServerSocket serverSocket = new ServerSocket(port)) {
 
-			while (true) {
+				System.out.println("Server is listening on port " + port);
 
-				Socket socket = serverSocket.accept();
+				startTime = System.nanoTime();
 
-				//System.out.println("New client connected");
+				while (true) {
 
-				new ServerThread(socket).start();
+					Socket socket = serverSocket.accept();
 
-				// socket.close();
+					// System.out.println("New client connected");
+
+					ServerThread serverThread = new ServerThread(socket, threadID);
+					serverThread.start();
+					threadID++;
+					Thread_list.add(serverThread);
+
+					// socket.close();
+				}
+
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
 
 		} catch (IOException ex) {
