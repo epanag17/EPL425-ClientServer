@@ -19,10 +19,13 @@ public class ServerThread extends Thread {
 	public static final int REQUESTS = 300;
 	public static int counter = 0;// how many requests satisfies from the
 									// server
-	
 	public static final double INTERVAL = Math.pow(10, 6); // Interval ana miliseconds
 	
+	public ArrayList<Integer> throughput_list;
+	
+	public int threadID;
 
+	
 	public ServerThread(Socket socket, int threadID) {
 
 		this.socket = socket;
@@ -68,12 +71,10 @@ public class ServerThread extends Thread {
 			InputStream input = socket.getInputStream();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 			OutputStream output = socket.getOutputStream();
-
 			DataOutputStream dOut = new DataOutputStream(output);
-			PrintWriter writer = new PrintWriter(output, true);			
-
-
-			for (int i = 0; i < REQUESTS; i++) {				
+			PrintWriter writer = new PrintWriter(output, true);
+			
+			for (int i = 0; i < REQUESTS; i++) {
 
 				String request = reader.readLine();
 
@@ -90,6 +91,21 @@ public class ServerThread extends Thread {
 				String payload = CalculatePayloadValue(payloadSize);
 
 				writer.println(payload);
+
+				long currentTime = System.nanoTime();
+				if ((currentTime - startTime) <= INTERVAL) {
+					counter++;
+				} else {
+					
+					// System.out.println("the amount of requests that a server
+					// satisfied in " + INTERVAL
+					// + " nanoseconds are " + counter);
+					throughput_list.add(counter);
+					//writer_output_file.println("USER ID: "+user_id+" req per micro sec: "+counter);
+					
+					startTime = System.nanoTime();
+					counter = 0;
+				}
 
 			}
 			
