@@ -16,8 +16,8 @@ public class Client {
 	public static void main(String[] args) {
 
 		if (args.length < 3)
-
 			return;
+		
 
 		long Sum_array[];
 		ArrayList Total_latency_list = new ArrayList();// each cell contains the
@@ -33,13 +33,19 @@ public class Client {
 
 		int repetitions = Integer.parseInt(args[2]);
 
+		
+		int N = 10;
+		
+		// Mistiko input gia arithmo xristwn
+		if( args.length == 4 )
+			N = Integer.parseInt( args[3] );
+		
 		long Total_latency = 0;
 
 		try {
 
-			PrintWriter writer_output_file = new PrintWriter("RTT_output.txt", "UTF-8");
+			PrintWriter writer_output_file = new PrintWriter("RTT_output_" + N + "users.txt", "UTF-8");
 
-			int N = 10;
 
 			writer_output_file.println("USERS: " + N);
 
@@ -92,7 +98,6 @@ public class Client {
 
 			writer_output_file.println("TOTAL LATENCY: " + Total_latency_list);
 
-			// https://stackoverflow.com/questions/702415/how-to-know-if-other-threads-have-finished
 
 			writer_output_file.close();
 
